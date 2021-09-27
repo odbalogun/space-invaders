@@ -81,9 +81,13 @@ class Enemy(Ship):
 def main():
     run = True
     fps = 60
-    level = 1
+    level = 0
     lives = 5
     main_font = pygame.font.SysFont("comicsans", 50)
+
+    enemies = []
+    wave_length = 5
+    enemy_vel = 1
 
     player_velocity = 5
 
@@ -100,12 +104,26 @@ def main():
         # subtracting the label width ensures that theres enough space to hold label text
         WIN.blit(level_label, (WIDTH - level_label.get_width() - 10, 10))
 
+        for enemy in enemies:
+            enemy.draw(WIN)
+
         player.draw(WIN)
         pygame.display.update()
 
     while run:
         clock.tick(fps)
-        redraw_window()
+
+        if len(enemies) == 0:
+            # increment level when enemies have been defeated
+            level += 1
+            # increase enemy count for next level
+            wave_length += 5
+            # generate enemies
+            for i in range(wave_length):
+                # spawn enemies at random positions above the window
+                enemy = Enemy(random.randrange(50, WIDTH-100), random.randrange(-1500, -100),
+                              random.choice(["red", "blue", "green"]))
+                enemies.append(enemy)
 
         # check for event
         for event in pygame.event.get():
@@ -122,6 +140,16 @@ def main():
             player.y -= player_velocity
         if keys[pygame.K_DOWN] and player.y + player_velocity + player.height < HEIGHT:  # moving down
             player.y += player_velocity
+
+        # looping through a copy of the enemies list in order to avoid issues that may occur
+        # if you remove items from a list while looping through it
+        for enemy in enemies[:]:
+            enemy.move(enemy_vel)
+            if enemy.y + enemy.height > HEIGHT:
+                lives -= 1
+                enemies.remove(enemy)
+
+        redraw_window()
 
 
 main()
