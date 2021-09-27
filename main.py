@@ -41,7 +41,25 @@ class Ship:
         self.cool_down_counter = 0
 
     def draw(self, window):
-        pygame.draw.rect(window, (255, 0, 0), (self.x, self.y, 50, 50))
+        window.blit(self.ship_img, (self.x, self.y))
+
+    @property
+    def width(self):
+        return self.ship_img.get_width()
+
+    @property
+    def height(self):
+        return self.ship_img.get_height()
+
+
+class Player(Ship):
+    def __init__(self, x, y, health=100):
+        super().__init__(x, y, health)
+        self.ship_img = YELLOW_SPACE_SHIP
+        self.laser_img = YELLOW_LASER
+        # this allows pixel perfect collisions by defining a hitbox that is exactly the size of the ship image
+        self.mask = pygame.mask.from_surface(self.ship_img)
+        self.max_health = health
 
 
 def main():
@@ -53,7 +71,7 @@ def main():
 
     player_velocity = 5
 
-    ship = Ship(300, 650)
+    player = Player(300, 650)
     clock = pygame.time.Clock()
 
     def redraw_window():
@@ -66,7 +84,7 @@ def main():
         # subtracting the label width ensures that theres enough space to hold label text
         WIN.blit(level_label, (WIDTH - level_label.get_width() - 10, 10))
 
-        ship.draw(WIN)
+        player.draw(WIN)
         pygame.display.update()
 
     while run:
@@ -80,12 +98,14 @@ def main():
                 run = False
         # code to move the ship. first we check what key(s) are being pressed
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:  # moving left
-            ship.x -= player_velocity
-        if keys[pygame.K_RIGHT]:  # moving right
-            ship.x += player_velocity
-        if keys[pygame.K_UP]:  # moving up
-            ship.y -= player_velocity
-        if keys[pygame.K_DOWN]:  # moving down
-            ship.y += player_velocity
+        if keys[pygame.K_LEFT] and player.x - player_velocity > 0:  # moving left
+            player.x -= player_velocity
+        if keys[pygame.K_RIGHT] and player.x + player_velocity + player.width < WIDTH:  # moving right
+            player.x += player_velocity
+        if keys[pygame.K_UP] and player.y - player_velocity > 0:  # moving up
+            player.y -= player_velocity
+        if keys[pygame.K_DOWN] and player.y + player_velocity + player.height < HEIGHT:  # moving down
+            player.y += player_velocity
+
+
 main()
