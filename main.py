@@ -107,6 +107,10 @@ class Player(Ship):
         self.mask = pygame.mask.from_surface(self.ship_img)
         self.max_health = health
 
+    def draw(self, window):
+        super().draw(window)
+        self.health_bar(window)
+
     def move_lasers(self, vel, objs):
         self.cooldown()
         for laser in self.lasers:
@@ -119,6 +123,12 @@ class Player(Ship):
                         objs.remove(obj)
                         self.lasers.remove(laser)
 
+    def health_bar(self, window):
+        pygame.draw.rect(window, (255, 0, 0), (self.x, self.y + self.ship_img.get_height() + 10,
+                                               self.ship_img.get_width(), 10))
+        # calculate a fraction of the health bar using the amount of health left
+        pygame.draw.rect(window, (0, 255, 0), (self.x, self.y + self.ship_img.get_height() + 10,
+                                               self.ship_img.get_width() * (self.health / self.max_health), 10))
 
 class Enemy(Ship):
     COLOR_MAP = {
@@ -163,7 +173,7 @@ def main():
     player_velocity = 5
     laser_velocity = 4
 
-    player = Player(300, 650)
+    player = Player(300, 630)
     clock = pygame.time.Clock()
     lost = False
     lost_count = 0
@@ -227,7 +237,7 @@ def main():
             player.x += player_velocity
         if keys[pygame.K_UP] and player.y - player_velocity > 0:  # moving up
             player.y -= player_velocity
-        if keys[pygame.K_DOWN] and player.y + player_velocity + player.height < HEIGHT:  # moving down
+        if keys[pygame.K_DOWN] and player.y + player_velocity + player.height + 15 < HEIGHT:  # moving down
             player.y += player_velocity
         # code to let the player shoot
         if keys[pygame.K_SPACE]:
