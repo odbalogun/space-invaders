@@ -43,7 +43,7 @@ class Laser:
         self.y += vel
 
     def off_screen(self, height):
-        return height >= self.y >= 0
+        return not(height >= self.y >= 0)
 
     def collision(self, obj):
         return collide(obj, self)
@@ -134,6 +134,12 @@ class Enemy(Ship):
 
     def move(self, vel):
         self.y += vel
+
+    def shoot(self):
+        if self.cool_down_counter == 0:
+            laser = Laser(self.x-20, self.y, self.laser_img)
+            self.lasers.append(laser)
+            self.cool_down_counter = 1
 
 
 def collide(obj1, obj2):
@@ -232,10 +238,19 @@ def main():
         for enemy in enemies[:]:
             enemy.move(enemy_velocity)
             enemy.move_lasers(laser_velocity, player)
-            if enemy.y + enemy.height > HEIGHT:
+
+            # making the enemy shoot at random. multiplying by fps to compensate for no. of frames
+            if random.randrange(0, 4*fps) == 1:
+                enemy.shoot()
+
+            if collide(enemy, player):
+                player.health -= 10
+                enemies.remove(enemy)
+            elif enemy.y + enemy.height > HEIGHT:
                 lives -= 1
                 enemies.remove(enemy)
+        # negating velocity so lasers shoot up
+        player.move_lasers(-laser_velocity, enemies)
 
-        player.move_lasers(laser_velocity, enemies)
 
 main()
