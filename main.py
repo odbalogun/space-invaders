@@ -50,6 +50,8 @@ class Laser:
 
 
 class Ship:
+    COOLDOWN = 30
+
     def __init__(self, x, y, health=100):
         self.x = x
         self.y = y
@@ -62,6 +64,30 @@ class Ship:
 
     def draw(self, window):
         window.blit(self.ship_img, (self.x, self.y))
+        for laser in self.lasers:
+            laser.draw(window)
+
+    def move_lasers(self, vel, obj):
+        self.cooldown()
+        for laser in self.lasers:
+            laser.move(vel)
+            if laser.off_screen(HEIGHT):
+                self.lasers.remove(laser)
+            elif laser.collision(obj):
+                obj.health -= 10
+                self.lasers.remove(laser)
+
+    def cooldown(self):
+        if self.cool_down_counter >= self.COOLDOWN:
+            self.cool_down_counter = 0
+        elif self.cool_down_counter > 0:
+            self.cool_down_counter += 1
+
+    def shoot(self):
+        if self.cool_down_counter == 0:
+            laser = Laser(x, y, self.laser_img)
+            self.lasers.append(laser)
+            self.cool_down_counter = 1
 
     @property
     def width(self):
@@ -80,6 +106,18 @@ class Player(Ship):
         # this allows pixel perfect collisions by defining a hitbox that is exactly the size of the ship image
         self.mask = pygame.mask.from_surface(self.ship_img)
         self.max_health = health
+
+    def move_lasers(self, vel, objs):
+        self.cooldown()
+        for laser in self.lasers:
+            laser.move(vel)
+            if laser.off_screen(HEIGHT):
+                self.lasers.remove(laser)
+            else:
+                for obj in objs:
+                    if laser.collision(obj):
+                        objs.remove(obj)
+                        self.lasers.remove(laser)
 
 
 class Enemy(Ship):
@@ -184,6 +222,9 @@ def main():
             player.y -= player_velocity
         if keys[pygame.K_DOWN] and player.y + player_velocity + player.height < HEIGHT:  # moving down
             player.y += player_velocity
+        # code to let the player shoot
+        if keys[pygame.K_SPACE]:
+            player.shoot()
 
         # looping through a copy of the enemies list in order to avoid issues that may occur
         # if you remove items from a list while looping through it
