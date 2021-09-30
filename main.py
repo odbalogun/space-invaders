@@ -85,7 +85,7 @@ class Ship:
 
     def shoot(self):
         if self.cool_down_counter == 0:
-            laser = Laser(x, y, self.laser_img)
+            laser = Laser(self.x, self.y, self.laser_img)
             self.lasers.append(laser)
             self.cool_down_counter = 1
 
@@ -152,9 +152,10 @@ def main():
 
     enemies = []
     wave_length = 5
-    enemy_vel = 1
+    enemy_velocity = 1
 
     player_velocity = 5
+    laser_velocity = 4
 
     player = Player(300, 650)
     clock = pygame.time.Clock()
@@ -229,10 +230,12 @@ def main():
         # looping through a copy of the enemies list in order to avoid issues that may occur
         # if you remove items from a list while looping through it
         for enemy in enemies[:]:
-            enemy.move(enemy_vel)
+            enemy.move(enemy_velocity)
+            enemy.move_lasers(laser_velocity, player)
             if enemy.y + enemy.height > HEIGHT:
                 lives -= 1
                 enemies.remove(enemy)
 
+        player.move_lasers(laser_velocity, enemies)
 
 main()
