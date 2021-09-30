@@ -121,7 +121,8 @@ class Player(Ship):
                 for obj in objs:
                     if laser.collision(obj):
                         objs.remove(obj)
-                        self.lasers.remove(laser)
+                        if laser in self.lasers:
+                            self.lasers.remove(laser)
 
     def health_bar(self, window):
         pygame.draw.rect(window, (255, 0, 0), (self.x, self.y + self.ship_img.get_height() + 10,
@@ -129,6 +130,7 @@ class Player(Ship):
         # calculate a fraction of the health bar using the amount of health left
         pygame.draw.rect(window, (0, 255, 0), (self.x, self.y + self.ship_img.get_height() + 10,
                                                self.ship_img.get_width() * (self.health / self.max_health), 10))
+
 
 class Enemy(Ship):
     COLOR_MAP = {
@@ -185,7 +187,7 @@ def main():
         level_label = main_font.render(f"Level: {level}", 1, (255, 255, 255))
 
         WIN.blit(lives_label, (10, 10)) # top left corner offset by 10
-        # subtracting the label width ensures that theres enough space to hold label text
+        # subtracting the label width ensures that there's enough space to hold label text
         WIN.blit(level_label, (WIDTH - level_label.get_width() - 10, 10))
 
         for enemy in enemies:
@@ -228,7 +230,7 @@ def main():
         for event in pygame.event.get():
             # check if player has quit
             if event.type == pygame.QUIT:
-                run = False
+                quit()
         # code to move the ship. first we check what key(s) are being pressed
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and player.x - player_velocity > 0:  # moving left
@@ -263,4 +265,20 @@ def main():
         player.move_lasers(-laser_velocity, enemies)
 
 
-main()
+def main_menu():
+    title_font = pygame.font.SysFont("comicsans", 70)
+    run = True
+    while run:
+        WIN.blit(BG, (0, 0))
+        title_label = title_font.render("Press any key to begin...", 1, (255, 255, 255))
+        WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, 350))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            elif event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                main()
+    quit()
+
+
+main_menu()
